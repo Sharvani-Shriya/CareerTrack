@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/sidebar') %>
+
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-subtitle">Your placement journey at a glance.</p>
+        </div>
+        <a href="/applications/new" class="btn btn-primary">+ Add Application</a>
+      </div>
+
+      <!-- ═══════════════ STAT CARDS ═══════════════ -->
+      <section class="stats-grid">
+        <div class="stat-card stat-card--total">
+          <div class="stat-card__icon">🎯</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Total Applications</span>
+            <span class="stat-card__value"><%= totalApplications %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--applied">
+          <div class="stat-card__icon">📤</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Applied</span>
+            <span class="stat-card__value"><%= applied %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--oa">
+          <div class="stat-card__icon">📝</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">OA Scheduled</span>
+            <span class="stat-card__value"><%= oaScheduled %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--oa-cleared">
+          <div class="stat-card__icon">✅</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">OA Cleared</span>
+            <span class="stat-card__value"><%= oaCleared %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--tech">
+          <div class="stat-card__icon">💻</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Technical Round</span>
+            <span class="stat-card__value"><%= technicalRound %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--hr">
+          <div class="stat-card__icon">🤝</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">HR Round</span>
+            <span class="stat-card__value"><%= hrRound %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--offer">
+          <div class="stat-card__icon">🏆</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Offers</span>
+            <span class="stat-card__value"><%= offers %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--rejected">
+          <div class="stat-card__icon">❌</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Rejected</span>
+            <span class="stat-card__value"><%= rejected %></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ TWO-COLUMN LOWER SECTION ═══════════════ -->
+      <div class="dashboard-grid">
+
+        <!-- Recent Applications -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Applications</h2>
+            <a href="/applications" class="card-link">View All →</a>
+          </div>
+          <div class="card-body">
+            <% if (recentApplications.length === 0) { %>
+              <div class="empty-state">
+                <p>No applications yet. <a href="/applications/new">Add your first one!</a></p>
+              </div>
+            <% } else { %>
+              <ul class="app-list">
+                <% recentApplications.forEach(function(app) { %>
+                  <li class="app-list-item">
+                    <div class="app-list-item__info">
+                      <span class="app-list-item__company"><%= app.companyName %></span>
+                      <span class="app-list-item__role"><%= app.role %></span>
+                    </div>
+                    <span class="badge badge--<%= app.status.toLowerCase().replace(/ /g, '-') %>">
+                      <%= app.status %>
+                    </span>
+                  </li>
+                <% }) %>
+              </ul>
+            <% } %>
+          </div>
+        </section>
+
+        <!-- Upcoming Deadlines -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Upcoming Deadlines</h2>
+            <span class="card-link">Next 7 Days</span>
+          </div>
+          <div class="card-body">
+            <% if (upcomingDeadlines.length === 0) { %>
+              <div class="empty-state">
+                <p>No upcoming deadlines in the next 7 days. 🎉</p>
+              </div>
+            <% } else { %>
+              <ul class="deadline-list">
+                <% upcomingDeadlines.forEach(function(app) { %>
+                  <li class="deadline-item">
+                    <div class="deadline-item__date">
+                      <span class="deadline-item__day"><%= new Date(app.deadline).getDate() %></span>
+                      <span class="deadline-item__month">
+                        <%= new Date(app.deadline).toLocaleString('en-US', { month: 'short' }) %>
+                      </span>
+                    </div>
+                    <div class="deadline-item__info">
+                      <span class="deadline-item__company"><%= app.companyName %></span>
+                      <span class="deadline-item__role"><%= app.role %></span>
+                      <% if (app.daysRemaining) { %>
+                        <span class="badge badge--days badge--days-<%= app.daysRemaining.color %>" style="margin-top:4px; display:inline-block;">
+                          <%= app.daysRemaining.text %>
+                        </span>
+                      <% } %>
+                    </div>
+                    <a href="/applications/<%= app._id %>" class="btn btn-sm btn-outline">View</a>
+                  </li>
+                <% }) %>
+              </ul>
+            <% } %>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>

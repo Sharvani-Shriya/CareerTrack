@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('../partials/sidebar') %>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Add Application</h1>
+          <p class="page-subtitle">Track a new internship or placement application.</p>
+        </div>
+        <a href="/applications" class="btn btn-outline">← Back</a>
+      </div>
+
+      <section class="card form-card">
+        <form action="/applications" method="POST" class="app-form">
+
+          <!-- Row 1: Company & Role -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="companyName" class="form-label">Company Name <span class="required">*</span></label>
+              <input type="text" id="companyName" name="companyName" class="form-input" placeholder="e.g. Google, TCS, Infosys" required />
+            </div>
+            <div class="form-group">
+              <label for="role" class="form-label">Role <span class="required">*</span></label>
+              <input type="text" id="role" name="role" class="form-input" placeholder="e.g. SDE Intern, Analyst" required />
+            </div>
+          </div>
+
+          <!-- Row 2: Location & Package -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="location" class="form-label">Location</label>
+              <input type="text" id="location" name="location" class="form-input" placeholder="e.g. Bangalore, Remote" />
+            </div>
+            <div class="form-group">
+              <label for="packageOrStipend" class="form-label">Package / Stipend</label>
+              <input type="text" id="packageOrStipend" name="packageOrStipend" class="form-input" placeholder="e.g. ₹12 LPA, ₹30,000/month" />
+            </div>
+          </div>
+
+          <!-- Row 3: Application Link & Status -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="applicationLink" class="form-label">Application Link</label>
+              <input type="url" id="applicationLink" name="applicationLink" class="form-input" placeholder="https://careers.company.com/job/..." />
+            </div>
+            <div class="form-group">
+              <label for="status" class="form-label">Status</label>
+              <select id="status" name="status" class="form-select">
+                <% allStatuses.forEach(function(s) { %>
+                  <option value="<%= s %>"><%= s %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 4: Application Date & Deadline -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="applicationDate" class="form-label">Application Date</label>
+              <!-- Set default value to today's date using JS -->
+              <input type="date" id="applicationDate" name="applicationDate" class="form-input"
+                     value="<%= new Date().toISOString().split('T')[0] %>" />
+            </div>
+            <div class="form-group">
+              <label for="deadline" class="form-label">Deadline</label>
+              <input type="date" id="deadline" name="deadline" class="form-input" />
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group form-group--full">
+            <label for="notes" class="form-label">Personal Notes</label>
+            <textarea id="notes" name="notes" class="form-textarea" rows="4"
+              placeholder="Add any notes about this application, contacts, interview tips, etc."></textarea>
+          </div>
+
+          <!-- Submit -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">Save Application</button>
+            <a href="/applications" class="btn btn-outline btn-lg">Cancel</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>

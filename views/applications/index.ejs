@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('../partials/sidebar') %>
+
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Applications</h1>
+          <p class="page-subtitle">
+            <%= applications.length %> application<%= applications.length !== 1 ? 's' : '' %> found
+          </p>
+        </div>
+        <a href="/applications/new" class="btn btn-primary">+ Add New</a>
+      </div>
+
+      <!-- ═══════════════ SEARCH & FILTER BAR ═══════════════ -->
+      <section class="filter-bar card">
+        <form action="/applications" method="GET" class="filter-form">
+          <!-- Search by company name -->
+          <div class="filter-group">
+            <label for="search" class="filter-label">Search</label>
+            <input
+              type="text"
+              id="search"
+              name="search"
+              class="form-input"
+              placeholder="Search company..."
+              value="<%= currentSearch %>"
+            />
+          </div>
+
+          <!-- Filter by Status -->
+          <div class="filter-group">
+            <label for="status" class="filter-label">Status</label>
+            <select id="status" name="status" class="form-select">
+              <option value="">All Statuses</option>
+              <% allStatuses.forEach(function(s) { %>
+                <option value="<%= s %>" <%= currentStatus === s ? 'selected' : '' %>><%= s %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- Filter by Role -->
+          <div class="filter-group">
+            <label for="role" class="filter-label">Role</label>
+            <input
+              type="text"
+              id="role"
+              name="role"
+              class="form-input"
+              placeholder="e.g. SDE, Analyst..."
+              value="<%= currentRole %>"
+            />
+          </div>
+
+          <!-- Sort -->
+          <div class="filter-group">
+            <label for="sort" class="filter-label">Sort By</label>
+            <select id="sort" name="sort" class="form-select">
+              <option value="" <%= currentSort === '' ? 'selected' : '' %>>Newest First</option>
+              <option value="deadline" <%= currentSort === 'deadline' ? 'selected' : '' %>>Deadline</option>
+              <option value="company"  <%= currentSort === 'company'  ? 'selected' : '' %>>Company</option>
+              <option value="status"   <%= currentSort === 'status'   ? 'selected' : '' %>>Status</option>
+            </select>
+          </div>
+
+          <div class="filter-actions">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a href="/applications" class="btn btn-outline">Clear</a>
+          </div>
+        </form>
+      </section>
+
+      <!-- ═══════════════ APPLICATIONS TABLE ═══════════════ -->
+      <section class="card table-card">
+        <% if (applications.length === 0) { %>
+          <div class="empty-state empty-state--large">
+            <div class="empty-state__icon">📭</div>
+            <h3>No applications found</h3>
+            <p>Try adjusting your search filters or <a href="/applications/new">add a new application</a>.</p>
+          </div>
+        <% } else { %>
+          <div class="table-wrapper">
+            <table class="app-table">
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Location</th>
+                  <th>Package</th>
+                  <th>Deadline</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% applications.forEach(function(app) { %>
+                  <tr class="table-row">
+                    <td class="td-company">
+                      <a href="/applications/<%= app._id %>"><strong><%= app.companyName %></strong></a>
+                    </td>
+                    <td><%= app.role %></td>
+                    <td><%= app.location %></td>
+                    <td><%= app.packageOrStipend %></td>
+                    <td>
+                      <% if (app.deadline) { %>
+                        <span class="deadline-text">
+                          <%= new Date(app.deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                        </span>
+                        <% if (app.daysRemaining) { %><br>
+                          <span class="badge badge--days badge--days-<%= app.daysRemaining.color %>">
+                            <%= app.daysRemaining.text %>
+                          </span>
+                        <% } %>
+                      <% } else { %>
+                        <span class="text-muted">–</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="badge badge--<%= app.status.toLowerCase().replace(/ /g, '-') %>">
+                        <%= app.status %>
+                      </span>
+                    </td>
+                    <td class="td-actions">
+                      <a href="/applications/<%= app._id %>" class="btn btn-sm btn-outline" title="View">👁</a>
+                      <a href="/applications/<%= app._id %>/edit" class="btn btn-sm btn-outline" title="Edit">✏️</a>
+                      <!-- DELETE uses a form + method-override because HTML forms only support GET/POST -->
+                      <form action="/applications/<%= app._id %>?_method=DELETE" method="POST" class="inline-form"
+                            onsubmit="return confirm('Delete this application? This cannot be undone.')">
+                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">🗑</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </section>
+
+    </main>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>

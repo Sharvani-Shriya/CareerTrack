@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('../partials/sidebar') %>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Edit Application</h1>
+          <p class="page-subtitle"><%= application.companyName %> – <%= application.role %></p>
+        </div>
+        <a href="/applications/<%= application._id %>" class="btn btn-outline">← Back</a>
+      </div>
+
+      <section class="card form-card">
+        <!--
+          PUT is not supported natively in HTML forms.
+          method-override reads ?_method=PUT from the URL and converts the POST to PUT.
+        -->
+        <form action="/applications/<%= application._id %>?_method=PUT" method="POST" class="app-form">
+
+          <!-- Row 1: Company & Role -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="companyName" class="form-label">Company Name <span class="required">*</span></label>
+              <input type="text" id="companyName" name="companyName" class="form-input"
+                     value="<%= application.companyName %>" required />
+            </div>
+            <div class="form-group">
+              <label for="role" class="form-label">Role <span class="required">*</span></label>
+              <input type="text" id="role" name="role" class="form-input"
+                     value="<%= application.role %>" required />
+            </div>
+          </div>
+
+          <!-- Row 2: Location & Package -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="location" class="form-label">Location</label>
+              <input type="text" id="location" name="location" class="form-input"
+                     value="<%= application.location %>" />
+            </div>
+            <div class="form-group">
+              <label for="packageOrStipend" class="form-label">Package / Stipend</label>
+              <input type="text" id="packageOrStipend" name="packageOrStipend" class="form-input"
+                     value="<%= application.packageOrStipend %>" />
+            </div>
+          </div>
+
+          <!-- Row 3: Link & Status -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="applicationLink" class="form-label">Application Link</label>
+              <input type="url" id="applicationLink" name="applicationLink" class="form-input"
+                     value="<%= application.applicationLink %>" />
+            </div>
+            <div class="form-group">
+              <label for="status" class="form-label">Status</label>
+              <select id="status" name="status" class="form-select">
+                <% allStatuses.forEach(function(s) { %>
+                  <option value="<%= s %>" <%= application.status === s ? 'selected' : '' %>><%= s %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 4: Dates -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="applicationDate" class="form-label">Application Date</label>
+              <input type="date" id="applicationDate" name="applicationDate" class="form-input"
+                value="<%= application.applicationDate ? new Date(application.applicationDate).toISOString().split('T')[0] : '' %>" />
+            </div>
+            <div class="form-group">
+              <label for="deadline" class="form-label">Deadline</label>
+              <input type="date" id="deadline" name="deadline" class="form-input"
+                value="<%= application.deadline ? new Date(application.deadline).toISOString().split('T')[0] : '' %>" />
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group form-group--full">
+            <label for="notes" class="form-label">Personal Notes</label>
+            <textarea id="notes" name="notes" class="form-textarea" rows="4"><%= application.notes %></textarea>
+          </div>
+
+          <!-- ═══ PREPARATION CHECKLIST ═══ -->
+          <div class="form-group form-group--full">
+            <label class="form-label">Preparation Checklist</label>
+            <div class="checklist-grid">
+
+              <label class="checklist-item">
+                <input type="checkbox" name="preparation.resumeUpdated"
+                  <%= application.preparation.resumeUpdated ? 'checked' : '' %> />
+                <span class="checkmark"></span>
+                <span class="checklist-label">Resume Updated</span>
+              </label>
+
+              <label class="checklist-item">
+                <input type="checkbox" name="preparation.aptitudePrepared"
+                  <%= application.preparation.aptitudePrepared ? 'checked' : '' %> />
+                <span class="checkmark"></span>
+                <span class="checklist-label">Aptitude Prepared</span>
+              </label>
+
+              <label class="checklist-item">
+                <input type="checkbox" name="preparation.dsaRevised"
+                  <%= application.preparation.dsaRevised ? 'checked' : '' %> />
+                <span class="checkmark"></span>
+                <span class="checklist-label">DSA Revised</span>
+              </label>
+
+              <label class="checklist-item">
+                <input type="checkbox" name="preparation.oopRevised"
+                  <%= application.preparation.oopRevised ? 'checked' : '' %> />
+                <span class="checkmark"></span>
+                <span class="checklist-label">OOP Revised</span>
+              </label>
+
+              <label class="checklist-item">
+                <input type="checkbox" name="preparation.dbmsRevised"
+                  <%= application.preparation.dbmsRevised ? 'checked' : '' %> />
+                <span class="checkmark"></span>
+                <span class="checklist-label">DBMS Revised</span>
+              </label>
+
+              <label class="checklist-item">
+                <input type="checkbox" name="preparation.sqlRevised"
+                  <%= application.preparation.sqlRevised ? 'checked' : '' %> />
+                <span class="checkmark"></span>
+                <span class="checklist-label">SQL Revised</span>
+              </label>
+
+              <label class="checklist-item">
+                <input type="checkbox" name="preparation.hrQuestionsPrepared"
+                  <%= application.preparation.hrQuestionsPrepared ? 'checked' : '' %> />
+                <span class="checkmark"></span>
+                <span class="checklist-label">HR Questions Prepared</span>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">Update Application</button>
+            <a href="/applications/<%= application._id %>" class="btn btn-outline btn-lg">Cancel</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <!-- Chart.js CDN – loaded from CDN for simplicity, no npm install needed -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/sidebar') %>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Statistics</h1>
+          <p class="page-subtitle">Visual overview of your placement journey.</p>
+        </div>
+      </div>
+
+      <!-- ═══════════════ QUICK STAT CARDS ═══════════════ -->
+      <section class="stats-grid stats-grid--compact">
+        <div class="stat-card stat-card--total">
+          <div class="stat-card__icon">🎯</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Total Applications</span>
+            <span class="stat-card__value"><%= total %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--offer">
+          <div class="stat-card__icon">🏆</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Offers Received</span>
+            <span class="stat-card__value"><%= offers %></span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--tech">
+          <div class="stat-card__icon">📈</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Success Rate</span>
+            <span class="stat-card__value"><%= successRate %>%</span>
+          </div>
+        </div>
+        <div class="stat-card stat-card--oa">
+          <div class="stat-card__icon">⚡</div>
+          <div class="stat-card__info">
+            <span class="stat-card__label">Active Pipeline</span>
+            <span class="stat-card__value"><%= activeCount %></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ CHARTS ═══════════════ -->
+      <div class="charts-grid">
+
+        <!-- Pie Chart – Applications by Status -->
+        <section class="card chart-card">
+          <div class="card-header">
+            <h2 class="card-title">Applications by Status</h2>
+          </div>
+          <div class="card-body chart-body">
+            <canvas id="statusPieChart" aria-label="Pie chart showing applications by status"></canvas>
+          </div>
+        </section>
+
+        <!-- Bar Chart – Applications per Month -->
+        <section class="card chart-card">
+          <div class="card-header">
+            <h2 class="card-title">Applications per Month</h2>
+          </div>
+          <div class="card-body chart-body">
+            <canvas id="monthlyBarChart" aria-label="Bar chart showing applications per month"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <!-- ═══════════════ STATUS BREAKDOWN TABLE ═══════════════ -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Status Breakdown</h2>
+        </div>
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table class="app-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Count</th>
+                  <th>Percentage</th>
+                  <th>Progress</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% statusCounts.forEach(function(item) { %>
+                  <% var pct = total > 0 ? ((item.count / total) * 100).toFixed(1) : 0; %>
+                  <tr>
+                    <td>
+                      <span class="badge badge--<%= item.status.toLowerCase().replace(/ /g, '-') %>">
+                        <%= item.status %>
+                      </span>
+                    </td>
+                    <td><strong><%= item.count %></strong></td>
+                    <td><%= pct %>%</td>
+                    <td>
+                      <div class="progress-bar-container progress-bar-container--sm">
+                        <div class="progress-bar" style="width: <%= pct %>%"></div>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!--
+    Chart.js Initialization Script
+    We pass data from EJS (server) to the browser as JSON.
+    JSON.stringify() in the controller already converts arrays to JSON strings.
+  -->
+  <script>
+    // Parse the JSON strings safely as valid JS strings to avoid IDE syntax warnings
+    const statusLabels  = JSON.parse('<%- statusLabels %>');
+    const statusValues  = JSON.parse('<%- statusValues %>');
+    const monthlyLabels = JSON.parse('<%- monthlyLabels %>');
+    const monthlyCounts = JSON.parse('<%- monthlyCounts %>');
+
+    // Color palette for the pie chart slices
+    const pieColors = [
+      '#6366f1', '#8b5cf6', '#06b6d4', '#10b981',
+      '#f59e0b', '#3b82f6', '#ef4444',
+    ];
+
+    // ── PIE CHART: Applications by Status ──
+    const pieCtx = document.getElementById('statusPieChart').getContext('2d');
+    new Chart(pieCtx, {
+      type: 'doughnut', // doughnut looks more modern than a plain pie
+      data: {
+        labels: statusLabels,
+        datasets: [{
+          data: statusValues,
+          backgroundColor: pieColors,
+          borderWidth: 2,
+          borderColor: '#1e293b',
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#94a3b8',
+              padding: 16,
+              font: { family: 'Inter', size: 12 },
+            },
+          },
+        },
+      },
+    });
+
+    // ── BAR CHART: Applications per Month ──
+    const barCtx = document.getElementById('monthlyBarChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: monthlyLabels,
+        datasets: [{
+          label: 'Applications',
+          data: monthlyCounts,
+          backgroundColor: 'rgba(99, 102, 241, 0.7)',
+          borderColor: '#6366f1',
+          borderWidth: 2,
+          borderRadius: 8, // rounded bar tops
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          x: {
+            ticks: { color: '#94a3b8', font: { family: 'Inter' } },
+            grid:  { color: '#334155' },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#94a3b8', font: { family: 'Inter' }, stepSize: 1 },
+            grid:  { color: '#334155' },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+  </script>
+</body>
+</html>

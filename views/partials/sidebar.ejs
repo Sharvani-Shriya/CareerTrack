@@ -1,0 +1,51 @@
+<%# views/partials/sidebar.ejs %>
+<%# This partial renders the sidebar navigation. It highlights the active page. %>
+
+<aside class="sidebar">
+  <!-- App Logo / Brand -->
+  <div class="sidebar-brand">
+    <div class="brand-icon">CT</div>
+    <div class="brand-text">
+      <span class="brand-name">CareerTrack</span>
+      <span class="brand-tagline">Placement Tracker</span>
+    </div>
+  </div>
+
+  <!-- Navigation Links -->
+  <nav class="sidebar-nav">
+    <ul>
+      <li>
+        <a href="/" class="nav-link <%= locals.title && locals.title.startsWith('Dashboard') ? 'active' : '' %>">
+          <span class="nav-icon">⊞</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="/applications" class="nav-link <%= locals.title && locals.title.startsWith('Applications') ? 'active' : '' %>">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Applications</span>
+        </a>
+      </li>
+      <li>
+        <a href="/applications/new" class="nav-link">
+          <span class="nav-icon">＋</span>
+          <span class="nav-label">Add New</span>
+        </a>
+      </li>
+      <li>
+        <a href="/stats" class="nav-link <%= locals.title && locals.title.startsWith('Statistics') ? 'active' : '' %>">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Statistics</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <div class="sidebar-tip">
+      <span>💡</span>
+      <span>Update your applications regularly for accurate stats.</span>
+    </div>
+  </div>
+</aside>

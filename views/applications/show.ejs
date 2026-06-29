@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('../partials/sidebar') %>
+
+    <main class="main-content">
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title"><%= application.companyName %></h1>
+          <p class="page-subtitle"><%= application.role %> · <%= application.location %></p>
+        </div>
+        <div class="header-actions">
+          <a href="/applications/<%= application._id %>/edit" class="btn btn-primary">✏️ Edit</a>
+          <form action="/applications/<%= application._id %>?_method=DELETE" method="POST" class="inline-form"
+                onsubmit="return confirm('Delete this application?')">
+            <button type="submit" class="btn btn-danger">🗑 Delete</button>
+          </form>
+          <a href="/applications" class="btn btn-outline">← Back</a>
+        </div>
+      </div>
+
+      <!-- ═══════════════ TOP ROW: INFO + STATUS ═══════════════ -->
+      <div class="show-grid">
+
+        <!-- Company Information Card -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Company Information</h2>
+            <span class="badge badge--<%= application.status.toLowerCase().replace(/ /g, '-') %>">
+              <%= application.status %>
+            </span>
+          </div>
+          <div class="card-body">
+            <dl class="info-list">
+              <div class="info-row">
+                <dt class="info-label">Company</dt>
+                <dd class="info-value"><%= application.companyName %></dd>
+              </div>
+              <div class="info-row">
+                <dt class="info-label">Role</dt>
+                <dd class="info-value"><%= application.role %></dd>
+              </div>
+              <div class="info-row">
+                <dt class="info-label">Location</dt>
+                <dd class="info-value"><%= application.location %></dd>
+              </div>
+              <div class="info-row">
+                <dt class="info-label">Package / Stipend</dt>
+                <dd class="info-value info-value--highlight"><%= application.packageOrStipend %></dd>
+              </div>
+              <div class="info-row">
+                <dt class="info-label">Applied On</dt>
+                <dd class="info-value">
+                  <%= application.applicationDate
+        ? new Date(application.applicationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
+        : 'N/A' %>
+                </dd>
+              </div>
+              <div class="info-row">
+                <dt class="info-label">Deadline</dt>
+                <dd class="info-value">
+                  <% if (application.deadline) { %>
+                    <%= new Date(application.deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %>
+                    <% if (application.daysRemaining) { %>
+                      <span class="badge badge--days badge--days-<%= application.daysRemaining.color %>" style="margin-left:8px">
+                        <%= application.daysRemaining.text %>
+                      </span>
+                    <% } %>
+                  <% } else { %>
+                    No Deadline
+                  <% } %>
+                </dd>
+              </div>
+              <% if (application.applicationLink) { %>
+              <div class="info-row">
+                <dt class="info-label">Application Link</dt>
+                <dd class="info-value">
+                  <a href="<%= application.applicationLink %>" target="_blank" rel="noopener noreferrer" class="link">
+                    View Posting ↗
+                  </a>
+                </dd>
+              </div>
+              <% } %>
+            </dl>
+          </div>
+        </section>
+
+        <!-- Progress Timeline Card -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Application Timeline</h2>
+          </div>
+          <div class="card-body">
+            <div class="timeline">
+              <%
+                var stageOrder = ['Applied','OA Scheduled','OA Cleared','Technical Interview','HR Interview','Offer'];
+                var currentIndex = stageOrder.indexOf(application.status);
+              %>
+              <% timeline.forEach(function(stage, index) { %>
+                <%
+                  var isDone    = (currentIndex > index);
+                  var isCurrent = (application.status === stage);
+                  var stateClass = isDone ? 'done' : (isCurrent ? 'current' : 'upcoming');
+                %>
+                <div class="timeline-step timeline-step--<%= stateClass %>">
+                  <div class="timeline-dot">
+                    <% if (isDone)    { %> ✓
+                    <% } else if (isCurrent) { %> ●
+                    <% } else { %> ○
+                    <% } %>
+                  </div>
+                  <div class="timeline-content">
+                    <span class="timeline-label"><%= stage %></span>
+                    <% if (isCurrent) { %>
+                      <span class="timeline-badge">Current Stage</span>
+                    <% } %>
+                  </div>
+                </div>
+                <% if (index < timeline.length - 1) { %>
+                  <div class="timeline-connector timeline-connector--<%= isDone ? 'done' : 'upcoming' %>"></div>
+                <% } %>
+              <% }) %>
+              <% if (application.status === 'Rejected') { %>
+                <div class="timeline-step timeline-step--rejected">
+                  <div class="timeline-dot">✗</div>
+                  <div class="timeline-content">
+                    <span class="timeline-label">Rejected</span>
+                    <span class="timeline-badge timeline-badge--rejected">Current Stage</span>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ═══════════════ BOTTOM ROW: CHECKLIST + NOTES ═══════════════ -->
+      <div class="show-grid">
+
+        <!-- Preparation Checklist -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Preparation Checklist</h2>
+            <%
+              var prep = application.preparation;
+              var prepDone = [prep.resumeUpdated, prep.aptitudePrepared, prep.dsaRevised,
+                              prep.oopRevised, prep.dbmsRevised, prep.sqlRevised, prep.hrQuestionsPrepared]
+                              .filter(Boolean).length;
+            %>
+            <span class="prep-progress"><%= prepDone %>/7 completed</span>
+          </div>
+          <div class="card-body">
+            <div class="progress-bar-container">
+              <div class="progress-bar" style="width: <%= (prepDone / 7 * 100).toFixed(0) + '%' %>"></div>
+            </div>
+
+            <ul class="checklist-view">
+              <li class="checklist-view-item <%= application.preparation.resumeUpdated ? 'done' : '' %>">
+                <span class="check-icon"><%= application.preparation.resumeUpdated ? '✓' : '○' %></span>
+                Resume Updated
+              </li>
+              <li class="checklist-view-item <%= application.preparation.aptitudePrepared ? 'done' : '' %>">
+                <span class="check-icon"><%= application.preparation.aptitudePrepared ? '✓' : '○' %></span>
+                Aptitude Prepared
+              </li>
+              <li class="checklist-view-item <%= application.preparation.dsaRevised ? 'done' : '' %>">
+                <span class="check-icon"><%= application.preparation.dsaRevised ? '✓' : '○' %></span>
+                DSA Revised
+              </li>
+              <li class="checklist-view-item <%= application.preparation.oopRevised ? 'done' : '' %>">
+                <span class="check-icon"><%= application.preparation.oopRevised ? '✓' : '○' %></span>
+                OOP Revised
+              </li>
+              <li class="checklist-view-item <%= application.preparation.dbmsRevised ? 'done' : '' %>">
+                <span class="check-icon"><%= application.preparation.dbmsRevised ? '✓' : '○' %></span>
+                DBMS Revised
+              </li>
+              <li class="checklist-view-item <%= application.preparation.sqlRevised ? 'done' : '' %>">
+                <span class="check-icon"><%= application.preparation.sqlRevised ? '✓' : '○' %></span>
+                SQL Revised
+              </li>
+              <li class="checklist-view-item <%= application.preparation.hrQuestionsPrepared ? 'done' : '' %>">
+                <span class="check-icon"><%= application.preparation.hrQuestionsPrepared ? '✓' : '○' %></span>
+                HR Questions Prepared
+              </li>
+            </ul>
+
+            <div class="checklist-action">
+              <a href="/applications/<%= application._id %>/edit" class="btn btn-primary btn-sm">
+                Update Checklist
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Notes -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Personal Notes</h2>
+          </div>
+          <div class="card-body">
+            <% if (application.notes && application.notes.trim() !== '') { %>
+              <div class="notes-content">
+                <%- application.notes.replace(/\n/g, '<br>') %>
+              </div>
+            <% } else { %>
+              <div class="empty-state">
+                <p>No notes yet. <a href="/applications/<%= application._id %>/edit">Add some notes.</a></p>
+              </div>
+            <% } %>
+          </div>
+        </section>
+      </div>
+
+      <!-- ═══════════════ INTERVIEW JOURNAL ═══════════════ -->
+      <section class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h2 class="card-title">📝 Interview Journal</h2>
+        </div>
+        <div class="card-body">
+
+          <!-- Add New Journal Entry Form -->
+          <details class="journal-add-panel">
+            <summary class="btn btn-primary btn-sm" style="display:inline-block; cursor:pointer; list-style:none; margin-bottom:1.2rem;">
+              + Add Journal Entry
+            </summary>
+            <form action="/applications/<%= application._id %>/journal" method="POST" class="journal-form">
+              <div class="form-group">
+                <label class="form-label">Interview Round</label>
+                <select name="round" class="form-select" required>
+                  <option value="">Select Round</option>
+                  <option value="OA">OA</option>
+                  <option value="Technical Round">Technical Round</option>
+                  <option value="HR Round">HR Round</option>
+                  <option value="Final Round">Final Round</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Interview Date</label>
+                <input type="date" name="date" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Questions Asked</label>
+                <textarea name="questions" class="form-textarea" rows="3" placeholder="What questions were asked?"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Personal Feedback</label>
+                <textarea name="feedback" class="form-textarea" rows="3" placeholder="How did it go?"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Things to Improve</label>
+                <textarea name="improve" class="form-textarea" rows="3" placeholder="What can you do better next time?"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Save Entry</button>
+            </form>
+          </details>
+
+          <!-- Existing Journal Entries -->
+          <% if (application.interviewJournal && application.interviewJournal.length > 0) { %>
+            <% application.interviewJournal.forEach(function(entry) { %>
+              <div class="journal-entry-card">
+                <div class="journal-entry-header">
+                  <span class="journal-round-badge"><%= entry.round %></span>
+                  <span class="journal-date">
+                    <%= entry.date ? new Date(entry.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Date not set' %>
+                  </span>
+                </div>
+
+                <% if (entry.questions && entry.questions.trim()) { %>
+                  <div class="journal-section">
+                    <p class="journal-section-label">Questions Asked</p>
+                    <p class="journal-section-body"><%- entry.questions.replace(/\n/g, '<br>') %></p>
+                  </div>
+                <% } %>
+                <% if (entry.feedback && entry.feedback.trim()) { %>
+                  <div class="journal-section">
+                    <p class="journal-section-label">Personal Feedback</p>
+                    <p class="journal-section-body"><%- entry.feedback.replace(/\n/g, '<br>') %></p>
+                  </div>
+                <% } %>
+                <% if (entry.improve && entry.improve.trim()) { %>
+                  <div class="journal-section">
+                    <p class="journal-section-label">Things to Improve</p>
+                    <p class="journal-section-body"><%- entry.improve.replace(/\n/g, '<br>') %></p>
+                  </div>
+                <% } %>
+
+                <!-- Edit / Delete Actions -->
+                <div class="journal-entry-actions">
+                  <!-- Inline Edit Form (toggle via details) -->
+                  <details>
+                    <summary class="btn btn-sm btn-outline" style="list-style:none; cursor:pointer;">✏️ Edit</summary>
+                    <form action="/applications/<%= application._id %>/journal/edit/<%= entry._id %>" method="POST" class="journal-form" style="margin-top:0.8rem;">
+                      <div class="form-group">
+                        <label class="form-label">Interview Round</label>
+                        <select name="round" class="form-select">
+                          <option value="OA" <%= entry.round === 'OA' ? 'selected' : '' %>>OA</option>
+                          <option value="Technical Round" <%= entry.round === 'Technical Round' ? 'selected' : '' %>>Technical Round</option>
+                          <option value="HR Round" <%= entry.round === 'HR Round' ? 'selected' : '' %>>HR Round</option>
+                          <option value="Final Round" <%= entry.round === 'Final Round' ? 'selected' : '' %>>Final Round</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Interview Date</label>
+                        <input type="date" name="date" class="form-input"
+                          value="<%= entry.date ? new Date(entry.date).toISOString().split('T')[0] : '' %>" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Questions Asked</label>
+                        <textarea name="questions" class="form-textarea" rows="3"><%= entry.questions %></textarea>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Personal Feedback</label>
+                        <textarea name="feedback" class="form-textarea" rows="3"><%= entry.feedback %></textarea>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Things to Improve</label>
+                        <textarea name="improve" class="form-textarea" rows="3"><%= entry.improve %></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-primary btn-sm">Update Entry</button>
+                    </form>
+                  </details>
+
+                  <!-- Delete Form -->
+                  <form action="/applications/<%= application._id %>/journal/delete/<%= entry._id %>" method="POST"
+                        class="inline-form" onsubmit="return confirm('Delete this journal entry?')">
+                    <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="empty-state">
+              <p>No journal entries yet. Add one above to track your interviews.</p>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ═══════════════ ACTIVITY HISTORY ═══════════════ -->
+      <section class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h2 class="card-title">🕒 Activity History</h2>
+        </div>
+        <div class="card-body">
+          <% if (application.activityHistory && application.activityHistory.length > 0) { %>
+            <div class="activity-timeline">
+              <% application.activityHistory.forEach(function(entry) { %>
+                <div class="activity-item">
+                  <div class="activity-dot"></div>
+                  <div class="activity-content">
+                    <p class="activity-date">
+                      <%= new Date(entry.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                      &nbsp;·&nbsp;
+                      <%= new Date(entry.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) %>
+                    </p>
+                    <p class="activity-action"><strong><%= entry.action %></strong></p>
+                    <% if (entry.previousStatus && entry.action === 'Status Changed') { %>
+                      <p class="activity-detail"><%= entry.previousStatus %> → <%= entry.newStatus %></p>
+                    <% } else if (entry.previousStatus && (entry.action === 'Offer Received' || entry.action === 'Application Rejected')) { %>
+                      <p class="activity-detail"><%= entry.previousStatus %> → <%= entry.newStatus %></p>
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="empty-state">
+              <p>No activity recorded yet.</p>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>
